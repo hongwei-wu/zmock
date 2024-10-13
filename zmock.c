@@ -15,7 +15,7 @@
 struct zmock_mock_object {
 	enum zmock_type type;
 	const char *name;
-	bool always;
+	int count;
 	union {
 		zmock_value val;
 		zmock_func wrapper;
@@ -33,7 +33,7 @@ __attribute__((constructor)) static void zmock_objects_init(void)
         TAILQ_INIT(&g_zmock_objects);
 }
 
-void _zmock_will_return(const char *name, zmock_value val, bool always,
+void _zmock_will_return(const char *name, zmock_value val, int count,
 			const char *file, int line, const char *func)
 {
 	struct zmock_mock_object *obj;
@@ -42,7 +42,7 @@ void _zmock_will_return(const char *name, zmock_value val, bool always,
 	assert(obj);
 	obj->type = zmock_type_return;
 	obj->name = name;
-	obj->always = always;
+	obj->count = count;
 	obj->val  = val;
 	obj->file = file;
 	obj->line = line;
@@ -51,7 +51,7 @@ void _zmock_will_return(const char *name, zmock_value val, bool always,
 	TAILQ_INSERT_TAIL(&g_zmock_objects, obj, entry);
 }
 
-void _zmock_will_call(const char *name, zmock_func wrapper, bool always,
+void _zmock_will_call(const char *name, zmock_func wrapper, int count,
 		      const char *file, int line, const char *func)
 {
 	struct zmock_mock_object *obj;
@@ -60,7 +60,7 @@ void _zmock_will_call(const char *name, zmock_func wrapper, bool always,
 	assert(obj);
 	obj->type = zmock_type_call;
 	obj->name = name;
-	obj->always = always;
+	obj->count = count;
 	obj->wrapper = wrapper;
 	obj->file = file;
 	obj->line = line;
@@ -109,12 +109,13 @@ zmock_value _zmock_mock_value(const char *name)
 
 	assert(obj);
 	assert(obj->type == zmock_type_return);
+	assert(obj->count > 0);
+	obj->count -= 1;
 	val = obj->val;
-	if (!obj->always) {
+	if (!obj->count) {
 		zmock_remove_mock_object(obj);
 		free(obj);
 	}
-
 	return val;
 }
 
@@ -125,11 +126,12 @@ zmock_func _zmock_mock_func(const char *name)
 
 	assert(obj);
 	assert(obj->type == zmock_type_call);
+	assert(obj->count > 0);
+	obj->count -= 1;
 	wrapper = obj->wrapper;
-	if (!obj->always) {
+	if (!obj->count) {
 		zmock_remove_mock_object(obj);
 		free(obj);
 	}
-
 	return wrapper;
 }

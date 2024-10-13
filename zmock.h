@@ -8,6 +8,7 @@
 #define _ZMOCK_H_
 #include <stdint.h>
 #include <stdbool.h>
+#include <limits.h>
 
 #define zmock_value uintmax_t
 typedef void (*zmock_func)(void);
@@ -19,20 +20,16 @@ typedef void (*zmock_func)(void);
  * is called.
  */
 #define zmock_will_return(func, val) \
-        _zmock_will_return(#func, (zmock_value)val, false, __FILE__, __LINE__, \
+        _zmock_will_return(#func, (zmock_value)val, 1, __FILE__, __LINE__, \
                            __func__)
 
-/**
- * Sets a persistent mock return value for a specific function.
- *
- * This macro establishes a return value for a function that will persist
- * across multiple calls. This is useful when the function is expected
- * to return the same value consistently throughout the test, without needing
- * to redefine the return value for each individual call.
- */
-#define zmock_will_always_return(func, val) \
-        _zmock_will_return(#func, (zmock_value)val, true, __FILE__, __LINE__, \
+#define zmock_will_return_n(func, val, n) \
+        _zmock_will_return(#func, (zmock_value)val, n, __FILE__, __LINE__, \
                            __func__)
+
+#define zmock_will_return_always(func, val) \
+        _zmock_will_return(#func, (zmock_value)val, INT_MAX, __FILE__, \
+                           __LINE__, __func__)
 
 /**
  * Defines a custom behavior for a specific function call.
@@ -41,25 +38,20 @@ typedef void (*zmock_func)(void);
  * behavior defined by the wrapper.
  */
 #define zmock_will_call(func, wrapper) \
-        _zmock_will_call(#func, (zmock_func)wrapper, false, __FILE__, __LINE__,\
-                         __func__)
+        _zmock_will_call(#func, (zmock_func)wrapper, 1, __FILE__, \
+                         __LINE__, __func__)
 
+#define zmock_will_call_n(func, wrapper, n) \
+        _zmock_will_call(#func, (zmock_func)wrapper, n, __FILE__, \
+                         __LINE__, __func__)
+
+#define zmock_will_call_always(func, wrapper) \
+        _zmock_will_call(#func, (zmock_func)wrapper, INT_MAX, __FILE__, \
+                         __LINE__, __func__)
 /**
  * Macro to specify that a function will be reset in the mock framework.
  */
 #define zmock_will_reset(func) _zmock_will_reset(#func)
-
-/**
- * Sets a persistent custom behavior for a specific function call.
- *
- * This macro assigns a custom wrapper function to a mock that will persist
- * across multiple calls. It allows you to define a consistent behavior
- * for the function throughout the test, without needing to redefine
- * the wrapper for each individual call.
- */
-#define zmock_will_always_call(func, wrapper) \
-        _zmock_will_call(#func, (zmock_func)wrapper, true, __FILE__, __LINE__, \
-                         __func__)
 
 /**
  * Get the mock object for a function.
@@ -87,10 +79,10 @@ zmock_func _zmock_mock_func(const char *name);
 
 void _zmock_will_reset(const char *name);
 
-void _zmock_will_return(const char *name, zmock_value val, bool always,
+void _zmock_will_return(const char *name, zmock_value val, int count,
                         const char *file, int line, const char *func);
 
-void _zmock_will_call(const char *name, zmock_func wrapper, bool always,
+void _zmock_will_call(const char *name, zmock_func wrapper, int count,
                       const char *file, int line, const char *func);
 
 #endif //_ZMOCK_H_
