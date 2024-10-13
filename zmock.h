@@ -23,7 +23,7 @@ typedef void (*zmock_func)(void);
         _zmock_will_return(#func, (zmock_value)val, 1, __FILE__, __LINE__, \
                            __func__)
 
-#define zmock_will_return_n(func, val, n) \
+#define zmock_will_return_count(func, val, n) \
         _zmock_will_return(#func, (zmock_value)val, n, __FILE__, __LINE__, \
                            __func__)
 
@@ -41,7 +41,7 @@ typedef void (*zmock_func)(void);
         _zmock_will_call(#func, (zmock_func)wrapper, 1, __FILE__, \
                          __LINE__, __func__)
 
-#define zmock_will_call_n(func, wrapper, n) \
+#define zmock_will_call_count(func, wrapper, n) \
         _zmock_will_call(#func, (zmock_func)wrapper, n, __FILE__, \
                          __LINE__, __func__)
 

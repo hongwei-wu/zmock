@@ -41,7 +41,7 @@ int main(int argc, char **argv)
         zmock_will_call(func_return_void, mock_func_return_void);
         func_return_void();
 
-        zmock_will_call_n(func_return_int, mock_func_return_int, 2);
+        zmock_will_call_count(func_return_int, mock_func_return_int, 2);
         val = func_return_int(1);
         assert(val == 2);
 
@@ -64,7 +64,7 @@ int main(int argc, char **argv)
         zmock_will_return(func_return_void, 0);
         func_return_void();
 
-        zmock_will_return_n(func_return_int, 3, 2);
+        zmock_will_return_count(func_return_int, 3, 2);
         val = func_return_int(1);
         assert(val == 3);
 
