@@ -19,16 +19,16 @@ typedef void (*zmock_func)(void);
  * tests to specify what value should be returned when the function
  * is called.
  */
-#define zmock_will_return(func, val) \
-        _zmock_will_return(#func, (zmock_value)val, 1, __FILE__, __LINE__, \
+#define zmock_will_return(wrap, val) \
+        _zmock_will_return(#wrap, (zmock_value)val, 1, __FILE__, __LINE__, \
                            __func__)
 
-#define zmock_will_return_count(func, val, n) \
-        _zmock_will_return(#func, (zmock_value)val, n, __FILE__, __LINE__, \
+#define zmock_will_return_count(wrap, val, n) \
+        _zmock_will_return(#wrap, (zmock_value)val, n, __FILE__, __LINE__, \
                            __func__)
 
-#define zmock_will_return_always(func, val) \
-        _zmock_will_return(#func, (zmock_value)val, INT_MAX, __FILE__, \
+#define zmock_will_return_always(wrap, val) \
+        _zmock_will_return(#wrap, (zmock_value)val, INT_MAX, __FILE__, \
                            __LINE__, __func__)
 
 /**
@@ -37,32 +37,33 @@ typedef void (*zmock_func)(void);
  * substitute the original function implementation with a custom
  * behavior defined by the wrapper.
  */
-#define zmock_will_call(func, wrapper) \
-        _zmock_will_call(#func, (zmock_func)wrapper, 1, __FILE__, \
+#define zmock_will_call(wrap, wrapper) \
+        _zmock_will_call(#wrap, (zmock_func)wrapper, 1, __FILE__, \
                          __LINE__, __func__)
 
-#define zmock_will_call_count(func, wrapper, n) \
-        _zmock_will_call(#func, (zmock_func)wrapper, n, __FILE__, \
+#define zmock_will_call_count(wrap, wrapper, n) \
+        _zmock_will_call(#wrap, (zmock_func)wrapper, n, __FILE__, \
                          __LINE__, __func__)
 
-#define zmock_will_call_always(func, wrapper) \
-        _zmock_will_call(#func, (zmock_func)wrapper, INT_MAX, __FILE__, \
+#define zmock_will_call_always(wrap, wrapper) \
+        _zmock_will_call(#wrap, (zmock_func)wrapper, INT_MAX, __FILE__, \
                          __LINE__, __func__)
 /**
  * Macro to specify that a function will be reset in the mock framework.
  */
-#define zmock_will_reset(func) _zmock_will_reset(#func)
+#define zmock_will_reset(wrap) _zmock_will_reset(#wrap)
 
+#define zmock_str(x) #x
 /**
  * Get the mock object for a function.
  * This macro uses a mock object, enabling the simulation of functions.
  */
 #define zmock_mock(func, type, ...) \
-        (_zmock_mock_type(#func) == zmock_type_none) \
+        (_zmock_mock_type(zmock_str(__wrap_##func)) == zmock_type_none) \
                 ? (type)__real_##func(__VA_ARGS__) \
-                : (_zmock_mock_type(#func) == zmock_type_return) \
-                        ? (type)_zmock_mock_value(#func) \
-                        : (type)((typeof(func) *)_zmock_mock_func(#func))(__VA_ARGS__)
+                : (_zmock_mock_type(zmock_str(__wrap_##func)) == zmock_type_return) \
+                        ? (type)_zmock_mock_value(zmock_str(__wrap_##func)) \
+                        : (type)((typeof(__wrap_##func) *)_zmock_mock_func(zmock_str(__wrap_##func)))(__VA_ARGS__)
 
 
 enum zmock_type {
